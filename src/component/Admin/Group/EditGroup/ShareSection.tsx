@@ -1,0 +1,123 @@
+// This file is part of Cloudreve Pro edition source code, Reference ID: 1146
+import { FormControl, FormControlLabel, Switch, Typography } from "@mui/material";
+import { useCallback, useContext, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { GroupEnt } from "../../../../api/dashboard";
+import { GroupPermission } from "../../../../api/user";
+import Boolset from "../../../../util/boolset";
+import SettingForm from "../../../Pages/Setting/SettingForm";
+import { NoMarginHelperText, SettingSection, SettingSectionContent } from "../../Settings/Settings";
+import { AnonymousGroupID } from "../GroupRow";
+import { GroupSettingContext } from "./GroupSettingWrapper";
+
+const ShareSection = () => {
+  const { t } = useTranslation("dashboard");
+  const { values, setGroup } = useContext(GroupSettingContext);
+
+  const permission = useMemo(() => {
+    return new Boolset(values.permissions ?? "");
+  }, [values.permissions]);
+
+  const onAllowCreateShareLinkChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setGroup((p: GroupEnt) => ({
+        ...p,
+        permissions: new Boolset(p.permissions).set(GroupPermission.share, e.target.checked).toString(),
+      }));
+    },
+    [setGroup],
+  );
+
+  const onShareFreeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setGroup((p: GroupEnt) => ({
+        ...p,
+        permissions: new Boolset(p.permissions).set(GroupPermission.share_free, e.target.checked).toString(),
+      }));
+    },
+    [setGroup],
+  );
+
+  const onShareDownloadChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setGroup((p: GroupEnt) => ({
+        ...p,
+        permissions: new Boolset(p.permissions).set(GroupPermission.share_download, e.target.checked).toString(),
+      }));
+    },
+    [setGroup],
+  );
+
+  const onSetAnonymousPermissionChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setGroup((p: GroupEnt) => ({
+        ...p,
+        permissions: new Boolset(p.permissions)
+          .set(GroupPermission.set_anonymous_permission, e.target.checked)
+          .toString(),
+      }));
+    },
+    [setGroup],
+  );
+
+  return (
+    <SettingSection>
+      <Typography variant="h6" gutterBottom>
+        {t("group.share")}
+      </Typography>
+      <SettingSectionContent>
+        {values?.id != AnonymousGroupID && (
+          <SettingForm lgWidth={5}>
+            <FormControl fullWidth>
+              <FormControlLabel
+                control={
+                  <Switch checked={permission.enabled(GroupPermission.share)} onChange={onAllowCreateShareLinkChange} />
+                }
+                label={t("group.allowCreateShareLink")}
+              />
+              <NoMarginHelperText>{t("group.allowCreateShareLinkDes")}</NoMarginHelperText>
+            </FormControl>
+          </SettingForm>
+        )}
+        <SettingForm lgWidth={5}>
+          <FormControl fullWidth>
+            <FormControlLabel
+              control={<Switch checked={permission.enabled(GroupPermission.share_free)} onChange={onShareFreeChange} />}
+              label={t("group.shareFree")}
+            />
+            <NoMarginHelperText>{t("group.shareFreeDes")}</NoMarginHelperText>
+          </FormControl>
+        </SettingForm>
+        <SettingForm lgWidth={5}>
+          <FormControl fullWidth>
+            <FormControlLabel
+              control={
+                <Switch checked={permission.enabled(GroupPermission.share_download)} onChange={onShareDownloadChange} />
+              }
+              label={t("group.allowDownloadShare")}
+            />
+            <NoMarginHelperText>{t("group.allowDownloadShareDes")}</NoMarginHelperText>
+          </FormControl>
+        </SettingForm>
+        {values?.id != AnonymousGroupID && (
+          <SettingForm lgWidth={5}>
+            <FormControl fullWidth>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={permission.enabled(GroupPermission.set_anonymous_permission)}
+                    onChange={onSetAnonymousPermissionChange}
+                  />
+                }
+                label={t("group.esclateAnonymity")}
+              />
+              <NoMarginHelperText>{t("group.esclateAnonymityDes")}</NoMarginHelperText>
+            </FormControl>
+          </SettingForm>
+        )}
+      </SettingSectionContent>
+    </SettingSection>
+  );
+};
+
+export default ShareSection;
